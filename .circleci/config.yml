@@ -1,17 +1,23 @@
 version: 2.1
 
 jobs:
-  my_job:
+  configure_infrastructure:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
-      - run: return 1
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["c6:b9:e9:4c:9f:60:82:70:a5:a4:29:69:03:a4:e9:a9"] # You can get this ID in the section where you registered the SSH Key
       - run:
-          name: on error
-          command: echo "Hello Error!"
-          when: on_fail
+          name: Install dependencies
+          command: |
+            apk add --update ansible # install the dependencies needed for your playbook
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i inventory.txt playbook.yml
 
 workflows:
   my_workflow:
     jobs:
-      - my_job
+      - configure_infrastructure
