@@ -1,21 +1,21 @@
-version: 2.1
-
-
-
 jobs:
-  create_infrastructure:
-    docker:
-      - image: amazon/aws-cli
+  build_deploy:
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run:
-          name: Create Stack
+          name: Installing AWS CLI
           command: |
-            aws cloudformation create-stack --stack-name project2-2021-Network --template-body file://network.yml --parameters file://network-parameters.json
-      - run: return 1
-
+            sudo apt-get update
+            sudo apt install python3-pip
+            sudo pip3 install awsebcli --upgrade
+      - run: cd ./app && npm install && npm run build
+      - run: aws s3 sync ./app/build s3://ci-cd-example
 
 workflows:
-  my_workflow:
+  version: 2
+  execute_bulk:
     jobs:
-      - create_infrastructure
+      - build_deploy
+            
